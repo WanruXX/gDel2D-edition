@@ -51,7 +51,7 @@ void InputCreator::createPoints(const InputCreatorPara &InputPara,
         for (size_t ip = 0; ip < InputPtNum; ++ip)
         {
 #ifndef DISABLE_PCL_INPUT
-            const Point2 inPt{(*inPointCloud)[ip].x, (*inPointCloud)[ip].x};
+            const Point2 inPt{(*inPointCloud)[ip].x, (*inPointCloud)[ip].y};
 #else
             const auto inPt = inPointVec[ip];
 #endif

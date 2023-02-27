@@ -1,5 +1,6 @@
 #include "../inc/TriangulationHandler.h"
 #include "../inc/json.h"
+#include <Eigen/Dense>
 #include <unistd.h>
 #include <yaml-cpp/yaml.h>
 
@@ -210,47 +211,75 @@ void TriangulationHandler::saveResultsToFile() const
         }
 
         std::ofstream MeshOutput(_outMeshFilename);
+        std::string   MeshData;
         if (MeshOutput.is_open())
         {
-            nlohmann::json JsonFile;
-            JsonFile["type"]                      = "FeatureCollection";
-            JsonFile["name"]                      = "left_4_edge_polygon";
-            JsonFile["crs"]["type"]               = "name";
-            JsonFile["crs"]["properties"]["name"] = "urn:ogc:def:crs:EPSG::5556";
-            JsonFile["features"]                  = nlohmann::json::array();
-            int TriID                             = 0;
+
+            MeshData =
+                R"({"crs":{"properties":{"name":"urn:ogc:def:crs:EPSG::5556"},"type":"name"},"name":"left_4_edge_polygon","type":"FeatureCollection", "features":[)";
+            MeshData += "\n";
+            //            nlohmann::json JsonFile;
+            //            JsonFile["type"]                      = "FeatureCollection";
+            //            JsonFile["name"]                      = "left_4_edge_polygon";
+            //            JsonFile["crs"]["type"]               = "name";
+            //            JsonFile["crs"]["properties"]["name"] = "urn:ogc:def:crs:EPSG::5556";
+            //            JsonFile["features"]                  = nlohmann::json::array();
+            int TriID = 0;
             for (auto &tri : _output.triVec)
             {
-                nlohmann::json Coor = nlohmann::json::array();
+                if (hasValidEdge(InputPointCloud[tri._v[0]], InputPointCloud[tri._v[1]], InputPointCloud[tri._v[2]]))
+                {
+                    MeshData +=
+                        R"({ "type": "Feature", "properties": { "TriID": )" + std::to_string(TriID) +
+                        " , \"Upward\": " +
+                        std::to_string(getTriNormal(
+                            InputPointCloud[tri._v[0]], InputPointCloud[tri._v[1]], InputPointCloud[tri._v[2]])) +
+                        R"( }, "geometry": { "type": "Polygon", "coordinates": [[[)" +
+                        std::to_string(static_cast<double>(InputPointCloud[tri._v[0]].x) + InitX) + ", " +
+                        std::to_string(static_cast<double>(InputPointCloud[tri._v[0]].y) + InitY) + "], [" +
+                        std::to_string(static_cast<double>(InputPointCloud[tri._v[1]].x) + InitX) + ", " +
+                        std::to_string(static_cast<double>(InputPointCloud[tri._v[1]].y) + InitY) + "], [" +
+                        std::to_string(static_cast<double>(InputPointCloud[tri._v[2]].x) + InitX) + ", " +
+                        std::to_string(static_cast<double>(InputPointCloud[tri._v[2]].y) + InitY) + "]]] } },\n";
+//                    nlohmann::json Coor = nlohmann::json::array();
 #ifndef DISABLE_PCL_INPUT
-                Coor.push_back({static_cast<double>(InputPointCloud[tri._v[0]].x) + InitX,
-                                static_cast<double>(InputPointCloud[tri._v[0]].y) + InitY,
-                                static_cast<double>(InputPointCloud[tri._v[0]].z) + InitZ});
-                Coor.push_back({static_cast<double>(InputPointCloud[tri._v[1]].x) + InitX,
-                                static_cast<double>(InputPointCloud[tri._v[1]].y) + InitY,
-                                static_cast<double>(InputPointCloud[tri._v[1]].z) + InitZ});
-                Coor.push_back({static_cast<double>(InputPointCloud[tri._v[2]].x) + InitX,
-                                static_cast<double>(InputPointCloud[tri._v[2]].y) + InitY,
-                                static_cast<double>(InputPointCloud[tri._v[2]].z) + InitZ});
+//                    Coor.push_back({static_cast<double>(InputPointCloud[tri._v[0]].x) + InitX,
+//                                    static_cast<double>(InputPointCloud[tri._v[0]].y) + InitY,
+//                                    static_cast<double>(InputPointCloud[tri._v[0]].z) + InitZ});
+//                    Coor.push_back({static_cast<double>(InputPointCloud[tri._v[1]].x) + InitX,
+//                                    static_cast<double>(InputPointCloud[tri._v[1]].y) + InitY,
+//                                    static_cast<double>(InputPointCloud[tri._v[1]].z) + InitZ});
+//                    Coor.push_back({static_cast<double>(InputPointCloud[tri._v[2]].x) + InitX,
+//                                    static_cast<double>(InputPointCloud[tri._v[2]].y) + InitY,
+//                                    static_cast<double>(InputPointCloud[tri._v[2]].z) + InitZ});
 #else
-                Coor.push_back({static_cast<double>(_input.InputPointVec[tri._v[0]]._p[0]) + InitX,
-                                static_cast<double>(_input.InputPointVec[tri._v[0]]._p[1]) + InitY});
-                Coor.push_back({static_cast<double>(_input.InputPointVec[tri._v[1]]._p[0]) + InitX,
-                                static_cast<double>(_input.InputPointVec[tri._v[1]]._p[1]) + InitY});
-                Coor.push_back({static_cast<double>(_input.InputPointVec[tri._v[2]]._p[0]) + InitX,
-                                static_cast<double>(_input.InputPointVec[tri._v[2]]._p[1]) + InitY});
+                    Coor.push_back({static_cast<double>(_input.InputPointVec[tri._v[0]]._p[0]) + InitX,
+                                    static_cast<double>(_input.InputPointVec[tri._v[0]]._p[1]) + InitY});
+                    Coor.push_back({static_cast<double>(_input.InputPointVec[tri._v[1]]._p[0]) + InitX,
+                                    static_cast<double>(_input.InputPointVec[tri._v[1]]._p[1]) + InitY});
+                    Coor.push_back({static_cast<double>(_input.InputPointVec[tri._v[2]]._p[0]) + InitX,
+                                    static_cast<double>(_input.InputPointVec[tri._v[2]]._p[1]) + InitY});
 #endif
-                nlohmann::json CoorWrapper = nlohmann::json::array();
-                CoorWrapper.push_back(Coor);
-                nlohmann::json TriangleObject;
-                TriangleObject["type"]       = "Feature";
-                TriangleObject["properties"] = {{"TriID", TriID}};
-                TriangleObject["geometry"]   = {{"type", "Polygon"}, {"coordinates", CoorWrapper}};
-                JsonFile["features"].push_back(TriangleObject);
-                ++TriID;
+                    //                    nlohmann::json CoorWrapper = nlohmann::json::array();
+                    //                    CoorWrapper.push_back(Coor);
+                    //                    nlohmann::json TriangleObject;
+                    //                    TriangleObject["type"]       = "Feature";
+                    //                    TriangleObject["properties"] = {
+                    //                        {"TriID", TriID},
+                    //                        {"Upward",
+                    //                         std::to_string(getTriNormal(
+                    //                             InputPointCloud[tri._v[0]], InputPointCloud[tri._v[1]], InputPointCloud[tri._v[2]]))}};
+                    //                    TriangleObject["geometry"] = {{"type", "Polygon"}, {"coordinates", CoorWrapper}};
+                    //                    JsonFile["features"].push_back(TriangleObject);
+                    ++TriID;
+                }
             }
-            MeshOutput << JsonFile << std::endl;
-            MeshOutput.close();
+                //                MeshOutput << JsonFile << std::endl;
+                MeshData.pop_back();
+                MeshData.pop_back();
+                MeshOutput << MeshData;
+                MeshOutput << "]\n}" << std::endl;
+                MeshOutput.close();
 
             //            std::ofstream OutputStream(OutputFile);
             //            nlohmann::json JsonFile;
@@ -284,4 +313,35 @@ void TriangulationHandler::saveResultsToFile() const
             std::cerr << _outMeshFilename << " is not a valid path!" << std::endl;
         }
     }
+}
+
+double TriangulationHandler::getTriNormal(const tTrimblePoint &pt1, const tTrimblePoint &pt2, const tTrimblePoint &pt3)
+{
+    Eigen::Vector3d pt1pt2(pt2.x - pt1.x, pt2.y - pt1.y, pt2.z - pt1.z);
+    Eigen::Vector3d pt2pt3(pt3.x - pt2.x, pt3.y - pt2.y, pt3.z - pt2.z);
+    auto            Normal = pt1pt2.cross(pt2pt3);
+    auto            Norm   = Normal(2) > 0 ? Normal : -Normal;
+    //    double          c0     = pt1pt2(1) * pt2pt3(2) - pt1pt2(2) * pt2pt3(1);
+    //    double          c1     = pt1pt2(2) * pt2pt3(0) - pt1pt2(0) * pt2pt3(2);
+    //    double          c2     = pt1pt2(0) * pt2pt3(1) - pt1pt2(1) * pt2pt3(0);
+    //    std::cout << std::setprecision(10);
+    //    std::cout << pt1pt2(0) << " " << pt1pt2(1) << " " << pt1pt2(2) << std::endl;
+    //    std::cout << pt2pt3(0) << " " << pt2pt3(1) << " " << pt2pt3(2) << std::endl;
+    //    std::cout << Norm(0) << " " << Norm(1) << " " << Norm(2) << std::endl;
+    //    std::cout << c0 << " " << c1 << " " << c2 << std::endl;
+    Norm.normalize();
+
+    if (Norm(0) != 0)
+    {
+        int x = 0;
+    }
+    Eigen::Vector3d Upward(0, 0, 1);
+    return std::acos(Norm.dot(Upward)) * 180 / M_PI;
+}
+
+bool TriangulationHandler::hasValidEdge(const tTrimblePoint &pt1, const tTrimblePoint &pt2, const tTrimblePoint &pt3)
+{
+    return (pt1.x - pt2.x) * (pt1.x - pt2.x) + (pt1.y - pt2.y) * (pt1.y - pt2.y) < 1 &&
+           (pt3.x - pt2.x) * (pt3.x - pt2.x) + (pt3.y - pt2.y) * (pt3.y - pt2.y) < 1 &&
+           (pt1.x - pt3.x) * (pt1.x - pt3.x) + (pt1.y - pt3.y) * (pt1.y - pt3.y) < 1;
 }

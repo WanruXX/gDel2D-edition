@@ -38,6 +38,10 @@ class TriangulationHandler
     void reset();
     void saveResultsToFile() const;
 
+    static double getTriNormal(const tTrimblePoint &pt1, const tTrimblePoint &pt2, const tTrimblePoint &pt3);
+
+    static bool hasValidEdge(const tTrimblePoint &pt1, const tTrimblePoint &pt2, const tTrimblePoint &pt3);
+
   public:
     explicit TriangulationHandler(const char *InputYAMLFile);
     void run();
