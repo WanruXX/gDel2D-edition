@@ -42,53 +42,59 @@ void InputCreator::createPoints(const InputCreatorPara &InputPara,
 
         // Remove duplicates
         HashPoint2 hashPoint2;
-        PointTable pointSet(static_cast<int>(InputPtNum), hashPoint2);
-        IntHVec    pointMap(InputPtNum);
-#ifndef DISABLE_PCL_INPUT
-        pcl::PointIndices::Ptr FilterIdx(new pcl::PointIndices);
-#endif
-        // Iterate input points
-        for (size_t ip = 0; ip < InputPtNum; ++ip)
-        {
-#ifndef DISABLE_PCL_INPUT
-            const Point2 inPt{(*inPointCloud)[ip].x, (*inPointCloud)[ip].y};
-#else
-            const auto inPt = inPointVec[ip];
-#endif
-            int ptIdx;
-            // Check if point unique
-            if (!pointSet.get(inPt, &ptIdx))
-            {
-                InputPointVec.push_back(inPt);
-                ptIdx = static_cast<int>(InputPointVec.size()) - 1;
-                pointSet.insert(inPt, ptIdx);
-#ifndef DISABLE_PCL_INPUT
-                FilterIdx->indices.push_back(static_cast<int>(ip));
-#endif
-            }
-            pointMap[ip] = ptIdx;
+//        PointTable pointSet(static_cast<int>(InputPtNum), hashPoint2);
+//        IntHVec    pointMap(InputPtNum);
+//#ifndef DISABLE_PCL_INPUT
+//        pcl::PointIndices::Ptr FilterIdx(new pcl::PointIndices);
+//#endif
+//        // Iterate input points
+//        for (size_t ip = 0; ip < InputPtNum; ++ip)
+//        {
+//#ifndef DISABLE_PCL_INPUT
+//            const Point2 inPt{(*inPointCloud)[ip].x, (*inPointCloud)[ip].y};
+//#else
+//            const auto inPt = inPointVec[ip];
+//#endif
+//            int ptIdx;
+//            // Check if point unique
+//            if (!pointSet.get(inPt, &ptIdx))
+//            {
+//                InputPointVec.push_back(inPt);
+//                ptIdx = static_cast<int>(InputPointVec.size()) - 1;
+//                pointSet.insert(inPt, ptIdx);
+//#ifndef DISABLE_PCL_INPUT
+//                FilterIdx->indices.push_back(static_cast<int>(ip));
+//#endif
+//            }
+//            pointMap[ip] = ptIdx;
+//        }
+//#ifndef DISABLE_PCL_INPUT
+//        pcl::ExtractIndices<POINT_TYPE> extract;
+//        extract.setInputCloud(inPointCloud);
+//        extract.setIndices(FilterIdx);
+//        extract.filter(InputPointCloud);
+//        pcl::io::savePCDFile("/home/wxxs6p/repo/gDel2D-edition/app/test1/R1_L250_ds_no_duplicated.pcd", InputPointCloud);
+//#endif
+        pcl::io::loadPCDFile("/home/wxxs6p/repo/gDel2D-edition/app/test1/R1_L250_ds_no_duplicated.pcd", InputPointCloud);
+        for(auto &pt:InputPointCloud){
+            InputPointVec.push_back(Point2{pt.x, pt.y});
         }
-#ifndef DISABLE_PCL_INPUT
-        pcl::ExtractIndices<POINT_TYPE> extract;
-        extract.setInputCloud(inPointCloud);
-        extract.setIndices(FilterIdx);
-        extract.filter(InputPointCloud);
-#endif
+
         const auto dupCount = InputPtNum - InputPointVec.size();
         if (dupCount > 0)
         {
             std::cout << dupCount << " duplicate points in input file!" << std::endl;
         }
         // Iterate input constraints
-        for (size_t i = 0; i < inConstraintVec.size(); ++i)
-        {
-            const Segment inC  = inConstraintVec[i];
-            const Segment newC = {pointMap[inC._v[0]], pointMap[inC._v[1]]};
-            if (newC._v[0] != newC._v[1] && InputConstraintVec.size() < inConstraintVec.size())
-            {
-                InputConstraintVec.push_back(newC);
-            }
-        }
+//        for (size_t i = 0; i < inConstraintVec.size(); ++i)
+//        {
+//            const Segment inC  = inConstraintVec[i];
+//            const Segment newC = {pointMap[inC._v[0]], pointMap[inC._v[1]]};
+//            if (newC._v[0] != newC._v[1] && InputConstraintVec.size() < inConstraintVec.size())
+//            {
+//                InputConstraintVec.push_back(newC);
+//            }
+//        }
         const auto dupConstraint = inConstraintVec.size() - InputConstraintVec.size();
         if (dupConstraint > 0)
             std::cout << dupConstraint << " degenerate or ignored constraints in input file!" << std::endl;

@@ -14,8 +14,8 @@ RunNum: 1
 InputFromFile: true
 #---------------------------------------------------#
 # if InputFromFile
-#InputPointCloudFile: "/home/wxxs6p/repo/gDel2D-edition/app/test1/R1_L250_ds.pcd"
-InputPointCloudFile: "/home/wxxs6p/repo/gDel2D-edition/app/test1/Fede_left_4_fromtxt.pcd"
+InputPointCloudFile: "/home/wxxs6p/repo/gDel2D-edition/app/test1/R1_L250_ds.pcd"
+#InputPointCloudFile: "/home/wxxs6p/repo/gDel2D-edition/app/test1/Fede_left_4_fromtxt.pcd"
 InputConstraintFile: ""
 #---------------------------------------------------#
 # if NOT InputFromFile
@@ -50,8 +50,8 @@ DoCheck: false
 OutputResult: true
 # The coordinate of the initial origin point in UTM, if it's originally in UTM then {0,0,0}
 MapOriginInUTM:
-  X: 650900
-  Y: 6561500
-  Z: 42
+  X: 651260
+  Y: 6562170
+  Z: 30
 OutputCheckResult: "/home/wxxs6p/repo/gDel2D-edition/app/test1/statistics.csv"
-OutputMeshPath: "/home/wxxs6p/repo/gDel2D-edition/app/test1/Fede_left_4_fromtxt.geojson"
+OutputMeshPath: "/home/wxxs6p/repo/gDel2D-edition/app/test1/R1_L250_ds_trjg.geojson"

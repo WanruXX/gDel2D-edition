@@ -54,5 +54,18 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(
         scanchannel,
         scanchannel)(double, classflags, classflags)(double, red, red)(double, green, green)(double, blue, blue))
 
+struct EIGEN_ALIGN16 tPointXYZT1
+{
+    PCL_ADD_POINT4D;
+    int    trj_id;
+    float elevation;
+    float  yaw;
+    PCL_MAKE_ALIGNED_OPERATOR_NEW
+};
+
+POINT_CLOUD_REGISTER_POINT_STRUCT(
+    tPointXYZT1,
+    (float, x, x)(float, y, y)(float, z, z)(int, trj_id, trj_id)(float, elevation, elevation)(float, yaw, yaw))
+
 #endif
 #endif //GDEL2D_EDIT_POINTTYPE_H
